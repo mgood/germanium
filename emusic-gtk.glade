@@ -52,7 +52,7 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkToolButton" id="resume-button">
+	    <widget class="GtkToolButton" id="start-button">
 	      <property name="visible">True</property>
 	      <property name="label" translatable="yes">Resume</property>
 	      <property name="use_underline">True</property>
@@ -60,22 +60,7 @@
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
 	      <property name="is_important">False</property>
-	      <signal name="clicked" handler="on_resume_button_clicked" last_modification_time="Mon, 21 Aug 2006 03:03:21 GMT"/>
-	    </widget>
-	    <packing>
-	      <property name="expand">False</property>
-	      <property name="homogeneous">True</property>
-	    </packing>
-	  </child>
-
-	  <child>
-	    <widget class="GtkToolButton" id="pause-button">
-	      <property name="visible">True</property>
-	      <property name="stock_id">gtk-media-pause</property>
-	      <property name="visible_horizontal">True</property>
-	      <property name="visible_vertical">True</property>
-	      <property name="is_important">False</property>
-	      <signal name="clicked" handler="on_pause_button_clicked" last_modification_time="Mon, 21 Aug 2006 03:05:57 GMT"/>
+	      <signal name="clicked" handler="on_start_button_clicked" last_modification_time="Mon, 21 Aug 2006 23:24:07 GMT"/>
 	    </widget>
 	    <packing>
 	      <property name="expand">False</property>

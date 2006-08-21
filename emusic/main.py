@@ -9,6 +9,7 @@ try:
     import gtk
     import gtk.glade
 except ImportError:
+    # FIXME
     sys.exit(1)
 
 from twisted.internet import gtk2reactor
@@ -30,16 +31,15 @@ from emusic.decrypt import get_tracks
 
 TITLE_COLUMN = 0
 PROGRESS_COLUMN = 1
-ICON_COLUMN = 2
-OBJECT_COLUMN = 3
+PROGRESS_TIME_COLUMN = 2
+ICON_COLUMN = 3
+OBJECT_COLUMN = 4
 
 icons = {
-    "new": gtk.STOCK_NEW,
-    "started": gtk.STOCK_MEDIA_PLAY,
-    "paused": gtk.STOCK_MEDIA_PAUSE,
-    "aborted": gtk.STOCK_STOP,
-    "completed": gtk.STOCK_APPLY,
-    "error": gtk.STOCK_STOP, # FIXME
+    'started': gtk.STOCK_MEDIA_PLAY,
+    'aborted': gtk.STOCK_STOP,
+    'completed': gtk.STOCK_APPLY,
+    'error': gtk.STOCK_DIALOG_ERROR,
 }
 
 
@@ -50,8 +50,7 @@ class EmusicDownloader(object):
     def __init__(self, files=[]):
         self.ui = gtk.glade.XML('emusic-gtk.glade', 'main-window')
         signals = ['on_open_button_clicked',
-                   'on_resume_button_clicked',
-                   'on_pause_button_clicked',
+                   'on_start_button_clicked',
                    'on_stop_button_clicked',
                   ]
         handlers = dict([(s,getattr(self, s)) for s in signals])
@@ -59,7 +58,7 @@ class EmusicDownloader(object):
         self.ui.signal_autoconnect(handlers)
         self.view = self['download-view']
 
-        self.model = gtk.ListStore(str, int, str, object)
+        self.model = gtk.ListStore(str, int, str, str, object)
         self.view.set_model(self.model)
 
         column = gtk.TreeViewColumn('State', gtk.CellRendererPixbuf(),
@@ -73,13 +72,15 @@ class EmusicDownloader(object):
 
         column = gtk.TreeViewColumn('Progress Status',
                                     gtk.CellRendererProgress(), 
-                                    text=PROGRESS_COLUMN,
+                                    text=PROGRESS_TIME_COLUMN,
                                     value=PROGRESS_COLUMN)
         column.set_min_width(50)
         self.view.append_column(column)
-        self.view.get_selection().connect('changed', self.on_download_view_selection_changed)
+        self.view.get_selection().connect('changed', self.on_track_selection_changed)
 
-        self.active_downloads = set()
+        self.selected_row = None
+
+        self.active_downloads = 0
 
         # TODO the .emp file contains the server info in the XML
         for filename in files:
@@ -90,8 +91,9 @@ class EmusicDownloader(object):
         return self.ui.get_widget(name)
 
     def add_track(self, info):
-        row = self.model.append(['%(artist)s - %(title)s' % info, 0, icons['new'], info])
-        if len(self.active_downloads) < self.max_downloads:
+        row = self.model.append(['%(artist)s - %(title)s' % info, 0, '',
+                                 None, Track(info)])
+        if self.active_downloads < self.max_downloads:
             self._download(row)
 
     def quit(self, widget):
@@ -126,53 +128,108 @@ class EmusicDownloader(object):
             for track in get_tracks(filename):
                 self.add_track(track)
 
-    def on_resume_button_clicked(self, button):
-        pass
+    def on_track_selection_changed(self, selection):
+        model, row = selection.get_selected()
+        self.selected_row = row
 
-    def on_pause_button_clicked(self, button):
-        pass
+    def on_start_button_clicked(self, button):
+        if self.selected_row is None:
+            return
+        track = self.model.get_value(self.selected_row, OBJECT_COLUMN)
+        if track.status == 'started':
+            return
+        self._download(self.selected_row)
 
     def on_stop_button_clicked(self, button):
-        pass
-
-    def on_download_view_selection_changed(self, selection):
-        pass
+        if self.selected_row is None:
+            return
+        track = self.model.get_value(self.selected_row, OBJECT_COLUMN)
+        if track.status not in ('new', 'started'):
+            return
+        track.abort()
+        self.model.set_value(self.selected_row, ICON_COLUMN, icons['aborted'])
+        self.model.set_value(self.selected_row, PROGRESS_TIME_COLUMN, '')
+        self.model.set_value(self.selected_row, PROGRESS_COLUMN, 0)
 
     def _download(self, row):
-        self.active_downloads.add(row)
+        self.active_downloads += 1
+        track = self.model.get_value(row, OBJECT_COLUMN)
 
         def started():
             self.model.set_value(row, ICON_COLUMN, icons['started'])
-        def progress(fraction):
-            # TODO only update the progress periodically
-            self.model.set_value(row, PROGRESS_COLUMN, 100*fraction)
+        def progress(rate_estimator):
+            self.model.set_value(row, PROGRESS_COLUMN,
+                                 100*rate_estimator.fraction_read())
+            self.model.set_value(row, PROGRESS_TIME_COLUMN,
+                                 format_time(rate_estimator.remaining_time()))
         def complete(result):
-            self.model.set_value(row, PROGRESS_COLUMN, 100)
-            self.model.set_value(row, ICON_COLUMN, icons['completed'])
-            self._download_done(row)
+            if track.status != 'aborted':
+                self.model.set_value(row, PROGRESS_COLUMN, 100)
+                self.model.set_value(row, ICON_COLUMN, icons['completed'])
+                track.completed()
+            self._download_done()
         def error(failure):
-            # failure.getErrorMessage()
+            print failure.getErrorMessage()
             self.model.set_value(row, ICON_COLUMN, icons['error'])
-            self._download_done(row)
+            track.error(failure)
+            self._download_done()
 
-        track_info = self.model.get_value(row, OBJECT_COLUMN)
-        url = str('http://dl.emusic.com/dl/%(trackid)s/%(filename)s' % track_info)
+        url = str('http://dl.emusic.com/dl/%(trackid)s/%(filename)s' % track.tags)
         pattern = '/home/matt/Music/%(artist)s/%(album)s/%(tracknum)s-%(title)s%(format)s'
-        filename = str(pattern % track_info)
+        filename = str(pattern % track.tags)
+
+        try:
+            os.makedirs(os.path.dirname(filename))
+        except OSError, e:
+            if e.errno != errno.EEXIST:
+                raise
 
         scheme,host,port,path = client._parse(url)
         factory = ProgressDownloader(url, filename, started, progress)
         reactor.connectTCP(host, port, factory)
         factory.deferred.addCallback(complete).addErrback(error)
+        track.start(factory)
 
-    def _download_done(self, row):
-        return
-        self.active_downloads.remove(row)
-        for sibling in row:
-            if len(self.active_downloads) >= self.active_downloads:
+    def _download_done(self):
+        self.active_downloads -= 1
+        self._check_queue()
+
+    def _check_queue(self):
+        for row in gtk_model_iter(self.model):
+            if self.active_downloads >= self.max_downloads:
                 break
-            if sibling not in self.active_downloads:
-                self._download(sibling)
+            track = self.model.get_value(row, OBJECT_COLUMN)
+            if track.status == 'new':
+                self._download(row)
+
+
+def gtk_model_iter(tree):
+    iter_ = tree.get_iter_first()
+    while iter_ is not None:
+        yield iter_
+        iter_ = tree.iter_next(iter_)
+
+
+class Track(object):
+    def __init__(self, tags):
+        self.tags = tags
+        self.downloader = None
+        self.status = 'new'
+
+    def start(self, downloader):
+        self.downloader = downloader
+        self.status = 'started'
+
+    def completed(self):
+        self.status = 'completed'
+
+    def abort(self):
+        self.status = 'aborted'
+        if self.downloader:
+            self.downloader.abort()
+
+    def error(self, failure):
+        self.status = 'error'
 
 
 class ProgressDownloader(client.HTTPDownloader):
@@ -184,6 +241,14 @@ class ProgressDownloader(client.HTTPDownloader):
         self.granularity = granularity
         self.next_update = None
         self.re = RateEstimator()
+        self._protocol = None
+
+    def buildProtocol(self, addr):
+        self._protocol = client.HTTPDownloader.buildProtocol(self, addr)
+        return self._protocol
+
+    def abort(self):
+        self._protocol.transport.loseConnection()
 
     def gotHeaders(self, headers):
         if self.status == '200':
@@ -201,10 +266,11 @@ class ProgressDownloader(client.HTTPDownloader):
             self.current_length += len(data)
             if self.total_length:
                 now = time.time()
+                self.re.update(self.current_length, now)
                 if not self.next_update or now >= self.next_update:
-                    self.re.update(len(data), now)
                     self.next_update = now + self.granularity
-                    self.progress_callback(self.current_length / self.total_length)
+                    #self.progress_callback(self.current_length / self.total_length)
+                    self.progress_callback(self.re)
         return client.HTTPDownloader.pagePart(self, data)
 
 
@@ -310,7 +376,21 @@ class RateEstimator:
         if shift <= 0: return rt
         return float(int(rt) >> shift << shift)
 
-
+def format_time(seconds, use_hours=0):
+    if seconds is None or seconds < 0:
+        if use_hours: return '--:--:--'
+        else:         return '--:--'
+    else:
+        seconds = int(seconds)
+        minutes = seconds / 60
+        seconds = seconds % 60
+        if use_hours:
+            hours = minutes / 60
+            minutes = minutes % 60
+            return '%02i:%02i:%02i' % (hours, minutes, seconds)
+        else:
+            return '%02i:%02i' % (minutes, seconds)
+ 
 if __name__ == '__main__':
     try:
         emusic = EmusicDownloader(sys.argv[1:])
