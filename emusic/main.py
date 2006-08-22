@@ -12,6 +12,7 @@ except ImportError:
     # FIXME
     sys.exit(1)
 import gconf
+import gnomevfs
 
 from twisted.internet import gtk2reactor
 gtk2reactor.install()
@@ -25,7 +26,8 @@ from Queue import Queue, Empty
 
 from emusic.emp import get_tracks
 from emusic.progress import ProgressDownloader, format_time
-from emusic.gconf_util import bind_file_chooser, bind_combo_box, bind_checkbox
+from emusic.gconf_util import gconf_property, bind_file_chooser, bind_combo_box, bind_checkbox
+from emusic.vfs_util import vfs_makedirs, open_for_write
 
 TITLE_COLUMN = 0
 PROGRESS_COLUMN = 1
@@ -42,9 +44,19 @@ icons = {
 
 GLADE_FILE = 'emusic-gtk.glade'
 
+GCONF_KEY = '/apps/emusic-gnome'
+# FIXME need to load schema
+gconf.client_get_default().add_dir(GCONF_KEY, gconf.CLIENT_PRELOAD_NONE)
+
 class EmusicDownloader(object):
 
-    max_downloads = 2
+    max_downloads = gconf_property(GCONF_KEY+'/max_downloads', gconf.VALUE_INT)
+    base_uri = gconf_property(GCONF_KEY+'/base_uri')
+    path_pattern = gconf_property(GCONF_KEY+'/path_pattern')
+    file_pattern = gconf_property(GCONF_KEY+'/file_pattern')
+ 
+    # TODO
+    strip_special = gconf_property(GCONF_KEY+'/strip-special', gconf.VALUE_BOOL)
 
     def __init__(self, files=[]):
         self.ui = gtk.glade.XML(GLADE_FILE, 'main_window')
@@ -80,6 +92,8 @@ class EmusicDownloader(object):
 
         self.selected_row = None
 
+        if self.max_downloads is None:
+            self.max_downloads = 2
         self.active_downloads = 0
 
         # TODO the .emp file contains the server info in the XML
@@ -178,17 +192,16 @@ class EmusicDownloader(object):
             self._download_done()
 
         url = str('http://dl.emusic.com/dl/%(trackid)s/%(filename)s' % track.tags)
-        pattern = '/home/matt/Music/%(artist)s/%(album)s/%(tracknum)s-%(title)s%(format)s'
-        filename = str(pattern % track.tags)
+        dir_uri = gnomevfs.URI(self.base_uri)
+        dir_uri = dir_uri.append_string(track.fill_pattern(self.path_pattern))
 
-        try:
-            os.makedirs(os.path.dirname(filename))
-        except OSError, e:
-            if e.errno != errno.EEXIST:
-                raise
+        filename = track.fill_pattern(self.file_pattern) + '.mp3'
+
+        vfs_makedirs(dir_uri)
+        openfile = open_for_write(dir_uri.append_string(filename))
 
         scheme,host,path,_,_,_ = urlparse(url)
-        factory = ProgressDownloader(url, filename, started, progress)
+        factory = ProgressDownloader(url, openfile, started, progress)
         reactor.connectTCP(host, 80, factory)
         factory.deferred.addCallback(complete).addErrback(error)
         track.start(factory)
@@ -205,28 +218,28 @@ class EmusicDownloader(object):
             if track.status == 'new':
                 self._download(row)
 
+
 PATH_PATTERNS = [('Album Artist, Album Title', '%aa/%at'),
-                 ("Album Artist (sortable), Album Title", "%as/%at"),
-                 ("Track Artist, Album Title", "%ta/%at"),
-                 ("Track Artist (sortable), Album Title", "%ts/%at"),
+                 #("Album Artist (sortable), Album Title", "%as/%at"),
+                 #("Track Artist, Album Title", "%ta/%at"),
+                 #("Track Artist (sortable), Album Title", "%ts/%at"),
                  ("Album Title", "%at"),
                  ("Album Artist", "%aa"),
-                 ("Album Artist (sortable)", "%as"),
+                 #("Album Artist (sortable)", "%as"),
                  ("Album Artist - Album Title", "%aa - %at"),
-                 ("Album Artist (sortable) - Album Title", "%as - %at"),
+                 #("Album Artist (sortable) - Album Title", "%as - %at"),
                  ("[none]", ""),
                 ]
 
 FILE_PATTERNS = [("Number - Title", "%tN - %tt"),
                  ("Track Title", "%tt"),
                  ("Track Artist - Track Title", "%ta - %tt"),
-                 ("Track Artist (sortable) - Track Title", "%ts - %tt"),
+                 #("Track Artist (sortable) - Track Title", "%ts - %tt"),
                  ("Number. Track Artist - Track Title", "%tN. %ta - %tt"),
                  ("Number-Track Artist-Track Title (lowercase)", "%tN-%tA-%tT"),
                 ]
 
 class PreferencesDialog(object):
-    gconf_key = '/apps/emusic-gnome'
 
     def __init__(self, parent):
         ui = gtk.glade.XML(GLADE_FILE, 'prefs_dialog')
@@ -234,20 +247,17 @@ class PreferencesDialog(object):
         dialog.connect('hide', self.on_dialog_hide)
         dialog.connect('response', self.on_response)
 
-        self.client = gconf.client_get_default()
-        self.client.add_dir(self.gconf_key, gconf.CLIENT_PRELOAD_NONE)
-
         path_chooser = ui.get_widget('path_chooser')
-        bind_file_chooser(path_chooser, self.gconf_key+'/base_uri')
+        bind_file_chooser(path_chooser, GCONF_KEY+'/base_uri')
 
         path_option = ui.get_widget('path_option')
-        bind_combo_box(path_option, self.gconf_key+'/path_pattern', PATH_PATTERNS)
+        bind_combo_box(path_option, GCONF_KEY+'/path_pattern', PATH_PATTERNS)
 
         file_option = ui.get_widget('file_option')
-        bind_combo_box(file_option, self.gconf_key+'/file_pattern', FILE_PATTERNS)
+        bind_combo_box(file_option, GCONF_KEY+'/file_pattern', FILE_PATTERNS)
 
         strip_option = ui.get_widget('check_strip')
-        bind_checkbox(strip_option, self.gconf_key+'/strip-special')
+        bind_checkbox(strip_option, GCONF_KEY+'/strip-special')
 
         dialog.show()
 
@@ -270,9 +280,18 @@ def gtk_model_iter(tree):
 
 class Track(object):
     def __init__(self, tags):
-        self.tags = tags
+        self.tags = dict([(k.encode('utf8'),v.encode('utf8'))
+                          for k,v in tags.iteritems()])
         self.downloader = None
         self.status = 'new'
+        self.patterns = {'%aa': self.tags['artist'],
+                         '%at': self.tags['album'],
+                         '%tN': self.tags['tracknum'].zfill(2),
+                         '%ta': self.tags['artist'],
+                         '%tA': self.tags['artist'].lower(),
+                         '%tt': self.tags['title'],
+                         '%tT': self.tags['title'].lower(),
+                        }
 
     def start(self, downloader):
         self.downloader = downloader
@@ -288,6 +307,11 @@ class Track(object):
 
     def error(self, failure):
         self.status = 'error'
+
+    def fill_pattern(self, pattern):
+        for k,v in self.patterns.iteritems():
+            pattern = pattern.replace(k, v)
+        return pattern
 
 
 if __name__ == '__main__':

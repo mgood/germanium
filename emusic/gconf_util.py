@@ -1,6 +1,27 @@
 import gconf
 import gtk
 
+
+class gconf_property(object):
+    def __init__(self, key, type=gconf.VALUE_STRING):
+        self.client = gconf.client_get_default()
+        self.key = key
+        self.type = type
+        self.value = _from_gconf(self.client.get(key))
+        self.client.notify_add(self.key, self._gconf_callback)
+
+    def __get__(self, inst, cls):
+        if inst is None:
+            return self
+        return self.value
+
+    def __set__(self, inst, value):
+        self.client.set(self.key, _to_gconf(self.type, value))
+
+    def _gconf_callback(self, client, cnx_id, entry, data):
+        self.value = _from_gconf(entry.value)
+
+
 def bind_file_chooser(chooser, key):
     def getter(chooser):
         return chooser.get_current_folder_uri()
@@ -50,6 +71,8 @@ def _to_gconf(type, value):
         gconf_value.set_string(value)
     elif type == gconf.VALUE_BOOL:
         gconf_value.set_bool(value)
+    elif type == gconf.VALUE_INT:
+        gconf_value.set_int(value)
     return gconf_value
 
 def _from_gconf(value):
@@ -59,6 +82,8 @@ def _from_gconf(value):
         return value.get_string()
     elif value.type == gconf.VALUE_BOOL:
         return value.get_bool()
+    elif value.type == gconf.VALUE_INT:
+        return value.get_int()
 
 def _gconf_changed(client, cnx_id, entry, (widget, setter)):
     setter(widget, _from_gconf(entry.value))
