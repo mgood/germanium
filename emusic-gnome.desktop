@@ -1,7 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=eMusic Gnome
-GenericName=eMusic Gnome
+Name=eMusic GNOME
+GenericName=eMusic GNOME
 Comment=Download songs from eMusic.com
 Exec=emusic-gnome
 Terminal=false
