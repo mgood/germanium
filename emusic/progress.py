@@ -43,6 +43,7 @@ class ProgressDownloader(client.HTTPDownloader):
         return client.HTTPDownloader.pagePart(self, data)
 
 
+# (c) 2002-2006 Michael D. Stenner and Ryan Tomayko
 class RateEstimator:
     def __init__(self, timescale=5.0):
         self.timescale = timescale
@@ -145,6 +146,7 @@ class RateEstimator:
         if shift <= 0: return rt
         return float(int(rt) >> shift << shift)
 
+# (c) 2002-2006 Michael D. Stenner and Ryan Tomayko
 def format_time(seconds, use_hours=0):
     if seconds is None or seconds < 0:
         if use_hours: return '--:--:--'

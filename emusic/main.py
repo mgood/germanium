@@ -11,6 +11,7 @@ try:
 except ImportError:
     # FIXME
     sys.exit(1)
+import gconf
 
 from twisted.internet import gtk2reactor
 gtk2reactor.install()
@@ -24,6 +25,7 @@ from Queue import Queue, Empty
 
 from emusic.emp import get_tracks
 from emusic.progress import ProgressDownloader, format_time
+from emusic.gconf_util import bind_file_chooser, bind_combo_box, bind_checkbox
 
 TITLE_COLUMN = 0
 PROGRESS_COLUMN = 1
@@ -49,6 +51,7 @@ class EmusicDownloader(object):
         signals = ['on_open_button_clicked',
                    'on_start_button_clicked',
                    'on_stop_button_clicked',
+                   'on_prefs_button_clicked',
                   ]
         handlers = dict([(s,getattr(self, s)) for s in signals])
         handlers['on_main_window_destroy'] = self.quit
@@ -148,6 +151,9 @@ class EmusicDownloader(object):
         self.model.set_value(self.selected_row, PROGRESS_TIME_COLUMN, '')
         self.model.set_value(self.selected_row, PROGRESS_COLUMN, 0)
 
+    def on_prefs_button_clicked(self, button):
+        PreferencesDialog(self)
+
     def _download(self, row):
         self.active_downloads += 1
         track = self.model.get_value(row, OBJECT_COLUMN)
@@ -198,6 +204,61 @@ class EmusicDownloader(object):
             track = self.model.get_value(row, OBJECT_COLUMN)
             if track.status == 'new':
                 self._download(row)
+
+PATH_PATTERNS = [('Album Artist, Album Title', '%aa/%at'),
+                 ("Album Artist (sortable), Album Title", "%as/%at"),
+                 ("Track Artist, Album Title", "%ta/%at"),
+                 ("Track Artist (sortable), Album Title", "%ts/%at"),
+                 ("Album Title", "%at"),
+                 ("Album Artist", "%aa"),
+                 ("Album Artist (sortable)", "%as"),
+                 ("Album Artist - Album Title", "%aa - %at"),
+                 ("Album Artist (sortable) - Album Title", "%as - %at"),
+                 ("[none]", ""),
+                ]
+
+FILE_PATTERNS = [("Number - Title", "%tN - %tt"),
+                 ("Track Title", "%tt"),
+                 ("Track Artist - Track Title", "%ta - %tt"),
+                 ("Track Artist (sortable) - Track Title", "%ts - %tt"),
+                 ("Number. Track Artist - Track Title", "%tN. %ta - %tt"),
+                 ("Number-Track Artist-Track Title (lowercase)", "%tN-%tA-%tT"),
+                ]
+
+class PreferencesDialog(object):
+    gconf_key = '/apps/emusic-gnome'
+
+    def __init__(self, parent):
+        ui = gtk.glade.XML(GLADE_FILE, 'prefs_dialog')
+        dialog = ui.get_widget('prefs_dialog')
+        dialog.connect('hide', self.on_dialog_hide)
+        dialog.connect('response', self.on_response)
+
+        self.client = gconf.client_get_default()
+        self.client.add_dir(self.gconf_key, gconf.CLIENT_PRELOAD_NONE)
+
+        path_chooser = ui.get_widget('path_chooser')
+        bind_file_chooser(path_chooser, self.gconf_key+'/base_uri')
+
+        path_option = ui.get_widget('path_option')
+        bind_combo_box(path_option, self.gconf_key+'/path_pattern', PATH_PATTERNS)
+
+        file_option = ui.get_widget('file_option')
+        bind_combo_box(file_option, self.gconf_key+'/file_pattern', FILE_PATTERNS)
+
+        strip_option = ui.get_widget('check_strip')
+        bind_checkbox(strip_option, self.gconf_key+'/strip-special')
+
+        dialog.show()
+
+    def on_response(self, dialog, response):
+        if response == gtk.RESPONSE_HELP:
+            pass # TODO
+        else:
+            dialog.hide()
+
+    def on_dialog_hide(self, dialog):
+        dialog.destroy()
 
 
 def gtk_model_iter(tree):
