@@ -214,9 +214,11 @@ class EmusicDownloader(object):
 
         url = str('http://dl.emusic.com/dl/%(trackid)s/%(filename)s' % track.tags)
         dir_uri = gnomevfs.URI(self.base_uri)
-        dir_uri = dir_uri.append_string(track.fill_pattern(self.path_pattern))
+        dir_uri = dir_uri.append_string(track.fill_pattern(self.path_pattern,
+                                                           self.strip_special))
 
-        filename = track.fill_pattern(self.file_pattern) + '.mp3'
+        filename = track.fill_pattern(self.file_pattern,
+                                      self.strip_special) + '.mp3'
 
         vfs_makedirs(dir_uri)
         openfile = open_for_write(dir_uri.append_string(filename))
@@ -329,10 +331,22 @@ class Track(object):
     def error(self, failure):
         self.status = 'error'
 
-    def fill_pattern(self, pattern):
+    def sanitize(self, string, strip_chars):
+        while string.startswith('.'):
+            string = string[1:]
+        string = string.replace('/', '-')
+        if strip_chars:
+            import re
+            string = re.sub(r'[\\:|]', '-', string)
+            string = re.sub(r'[*?&!\'"$()`{}]', ' ', string)
+            string = re.sub(r'\s', '_', string)
+        return string
+
+    def fill_pattern(self, pattern, strip_chars):
+        pattern = pattern.split('/')
         for k,v in self.patterns.iteritems():
-            pattern = pattern.replace(k, v)
-        return pattern
+            pattern = [p.replace(k, v) for p in pattern]
+        return '/'.join([self.sanitize(p, strip_chars) for p in pattern])
 
 
 if __name__ == '__main__':
