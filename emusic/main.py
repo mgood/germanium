@@ -38,12 +38,14 @@ icons = {
     'error': gtk.STOCK_DIALOG_ERROR,
 }
 
+GLADE_FILE = 'emusic-gtk.glade'
+
 class EmusicDownloader(object):
 
     max_downloads = 2
 
     def __init__(self, files=[]):
-        self.ui = gtk.glade.XML('emusic-gtk.glade', 'main-window')
+        self.ui = gtk.glade.XML(GLADE_FILE, 'main_window')
         signals = ['on_open_button_clicked',
                    'on_start_button_clicked',
                    'on_stop_button_clicked',
@@ -51,7 +53,7 @@ class EmusicDownloader(object):
         handlers = dict([(s,getattr(self, s)) for s in signals])
         handlers['on_main_window_destroy'] = self.quit
         self.ui.signal_autoconnect(handlers)
-        self.view = self['download-view']
+        self.view = self['download_view']
 
         self.model = gtk.ListStore(str, int, str, str, object)
         self.view.set_model(self.model)
