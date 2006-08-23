@@ -146,7 +146,8 @@ class EmusicDownloader(object):
         file_open.set_select_multiple(True)
 
         filter = gtk.FileFilter()
-        filter.set_name('eMusic download file')
+        # TODO look up the description from the MIME DB
+        filter.set_name('eMusic download package')
         filter.add_pattern('*.emp')
         file_open.add_filter(filter)
 

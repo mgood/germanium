@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/vnd.emusic-emusic_package">
-    <comment xml:lang="en">eMusic download manager file</comment>
+    <comment xml:lang="en">eMusic download package</comment>
     <magic priority="50">
       <match type="string" value="nF7YLao" offset="0"/>
     </magic>
