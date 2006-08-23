@@ -3,8 +3,13 @@ Encoding=UTF-8
 Name=eMusic GNOME
 GenericName=eMusic GNOME
 Comment=Download songs from eMusic.com
-Exec=emusic-gnome
-Terminal=false
+
 Type=Application
 Categories=GNOME;Application;AudioVideo
+
+Exec=emusic-gnome %F
+TryExec=emusic-gnome
+Terminal=false
 StartupNotify=true
+
+MimeType=application/vnd.emusic-emusic_package

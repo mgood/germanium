@@ -1,0 +1,7 @@
+emusic-gnome
+	command=emusic-gnome
+	name=emusic-gnome
+	can_open_multiple_files=true
+	expects_uris=false
+	requires_terminal=false
+	mime_types=application/vnd.emusic-emusic_package
