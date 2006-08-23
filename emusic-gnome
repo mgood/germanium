@@ -142,6 +142,9 @@ class EmusicDownloader(object):
                                                    gtk.RESPONSE_CANCEL,
                                                    gtk.STOCK_OPEN,
                                                    gtk.RESPONSE_OK))
+        # TODO use the previously opened location
+        file_open.set_select_multiple(True)
+
         filter = gtk.FileFilter()
         filter.set_name('eMusic download file')
         filter.add_pattern('*.emp')
@@ -152,15 +155,15 @@ class EmusicDownloader(object):
         filter.add_pattern('*')
         file_open.add_filter(filter)
 
-        filename = None
         if file_open.run() == gtk.RESPONSE_OK:
-            filename = file_open.get_filename()
+            filenames = file_open.get_filenames()
+        else:
+            filenames = []
 
         file_open.destroy()
 
-        # TODO should use GnomeVFS in case file is not on local FS
-        if filename is not None:
-            for track in get_tracks(filename):
+        for f in filenames:
+            for track in get_tracks(f):
                 self.add_track(track)
 
     def on_track_selection_changed(self, selection):
