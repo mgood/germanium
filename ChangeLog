@@ -1,0 +1,9 @@
+eMusic GNOME 0.1.1 (Aug 22, 2006)
+darcs get --tag=0.1.1 http://projects.matt-good.net/darcs/emusic-gnome/
+
+ * Fix missing import found by Huw Lynes
+ * Fix bug with "/" characters in filenames found by Huw Lynes
+ * Implement the "strip special characters" setting for removing
+   non-shell-friendly characters
+ * capitalize GNOME
+

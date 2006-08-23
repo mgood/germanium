@@ -1,5 +1,5 @@
 PACKAGE=emusic-gnome
-VERSION=0.1
+VERSION=0.1.1
 
 DEST=$(PACKAGE)-$(VERSION)
 
@@ -20,7 +20,7 @@ install:
 
 dist:
 	mkdir -p $(DEST)
-	cp -a AUTHORS COPYING README emusic-gnome emusic-gnome.glade emusic-gnome.gladep emusic-gnome.desktop Makefile $(DEST)
+	cp -a AUTHORS COPYING README emusic-gnome emusic-gnome.glade emusic-gnome.gladep emusic-gnome.desktop Makefile ChangeLog $(DEST)
 	mkdir -p $(DEST)/emusic
 	cp -a emusic/*.py $(DEST)/emusic
 	tar czf $(DEST).tar.gz $(DEST)
