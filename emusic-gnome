@@ -132,7 +132,6 @@ class EmusicDownloader(object):
             self._download(row)
 
     def quit(self, widget):
-        #gtk.main_quit()
         reactor.stop()
 
     def on_open_button_clicked(self, button):
@@ -218,14 +217,14 @@ class EmusicDownloader(object):
 
         url = str('http://dl.emusic.com/dl/%(trackid)s/%(filename)s' % track.tags)
         dir_uri = gnomevfs.URI(self.base_uri)
-        dir_uri = dir_uri.append_string(track.fill_pattern(self.path_pattern,
-                                                           self.strip_special))
+        dir_uri = dir_uri.append_path(track.fill_pattern(self.path_pattern,
+                                                         self.strip_special))
 
         filename = track.fill_pattern(self.file_pattern,
                                       self.strip_special) + '.mp3'
 
         vfs_makedirs(dir_uri)
-        openfile = open_for_write(dir_uri.append_string(filename))
+        openfile = open_for_write(dir_uri.append_file_name(filename))
 
         scheme,host,path,_,_,_ = urlparse(url)
         factory = ProgressDownloader(url, openfile, started, progress)
