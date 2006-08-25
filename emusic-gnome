@@ -84,6 +84,7 @@ class EmusicDownloader(object):
         signals = ['on_open_button_clicked',
                    'on_start_button_clicked',
                    'on_stop_button_clicked',
+                   'on_clear_button_clicked',
                    'on_prefs_button_clicked',
                   ]
         handlers = dict([(s,getattr(self, s)) for s in signals])
@@ -109,7 +110,8 @@ class EmusicDownloader(object):
                                     value=PROGRESS_COLUMN)
         column.set_min_width(50)
         self.view.append_column(column)
-        self.view.get_selection().connect('changed', self.on_track_selection_changed)
+        self.view.get_selection().connect('changed',
+                                          self.on_track_selection_changed)
 
         self.selected_row = None
 
@@ -173,7 +175,7 @@ class EmusicDownloader(object):
     def on_start_button_clicked(self, button):
         if self.selected_row is None:
             return
-        track = self.model.get_value(self.selected_row, OBJECT_COLUMN)
+        track = self._get_track(self.selected_row)
         if track.status == 'started':
             return
         self._download(self.selected_row)
@@ -181,7 +183,7 @@ class EmusicDownloader(object):
     def on_stop_button_clicked(self, button):
         if self.selected_row is None:
             return
-        track = self.model.get_value(self.selected_row, OBJECT_COLUMN)
+        track = self._get_track(self.selected_row)
         if track.status not in ('new', 'started'):
             return
         track.abort()
@@ -189,12 +191,22 @@ class EmusicDownloader(object):
         self.model.set_value(self.selected_row, PROGRESS_TIME_COLUMN, '')
         self.model.set_value(self.selected_row, PROGRESS_COLUMN, 0)
 
+    def on_clear_button_clicked(self, button):
+        for row in gtk_model_iter(self.model):
+            while self._get_track(row).status in ('completed', 'aborted',
+                                                  'error'):
+                if not self.model.remove(row):
+                    break
+
     def on_prefs_button_clicked(self, button):
         PreferencesDialog(self)
 
+    def _get_track(self, row):
+        return self.model.get_value(row, OBJECT_COLUMN)
+
     def _download(self, row):
         self.active_downloads += 1
-        track = self.model.get_value(row, OBJECT_COLUMN)
+        track = self._get_track(row)
 
         def started():
             self.model.set_value(row, ICON_COLUMN, icons['started'])
@@ -240,7 +252,7 @@ class EmusicDownloader(object):
         for row in gtk_model_iter(self.model):
             if self.active_downloads >= self.max_downloads:
                 break
-            track = self.model.get_value(row, OBJECT_COLUMN)
+            track = self._get_track(row)
             if track.status == 'new':
                 self._download(row)
 
