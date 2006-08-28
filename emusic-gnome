@@ -99,16 +99,19 @@ class EmusicDownloader(object):
                                     stock_id=ICON_COLUMN)
         self.view.append_column(column)
 
-        column = gtk.TreeViewColumn('Title', gtk.CellRendererText(), 
-                                    text=TITLE_COLUMN)
-        column.set_min_width(275)
+        title_renderer = gtk.CellRendererText()
+        title_renderer.set_property('ellipsize', 3)
+        column = gtk.TreeViewColumn('Title', title_renderer,
+                                    markup=TITLE_COLUMN)
+        column.set_min_width(100)
+        column.set_expand(True)
         self.view.append_column(column)
 
         column = gtk.TreeViewColumn('Progress Status',
                                     gtk.CellRendererProgress(), 
                                     text=PROGRESS_TIME_COLUMN,
                                     value=PROGRESS_COLUMN)
-        column.set_min_width(50)
+        column.set_min_width(100)
         self.view.append_column(column)
         self.view.get_selection().connect('changed',
                                           self.on_track_selection_changed)
@@ -128,8 +131,10 @@ class EmusicDownloader(object):
         return self.ui.get_widget(name)
 
     def add_track(self, info):
-        row = self.model.append(['%(artist)s - %(title)s' % info, 0, '',
-                                 None, Track(info)])
+        import cgi
+        title = '<b>%s</b>\n%s' % (cgi.escape(info['title']),
+                                   cgi.escape(info['artist']))
+        row = self.model.append([title, 0, '', None, Track(info)])
         if self.active_downloads < self.max_downloads:
             self._download(row)
 
