@@ -79,7 +79,7 @@ class EmusicDownloader(object):
     # TODO
     strip_special = gconf_property(GCONF_KEY+'/strip-special', gconf.VALUE_BOOL)
 
-    def __init__(self, files=[]):
+    def __init__(self):
         self.ui = gtk.glade.XML(GLADE_FILE, 'main_window')
         signals = ['on_open_button_clicked',
                    'on_start_button_clicked',
@@ -122,13 +122,14 @@ class EmusicDownloader(object):
             self.max_downloads = 2
         self.active_downloads = 0
 
+    def __getitem__(self, name):
+        return self.ui.get_widget(name)
+
+    def load_files(self, files):
         # TODO the .emp file contains the server info in the XML
         for filename in files:
             for track in get_tracks(filename):
                 self.add_track(track)
-
-    def __getitem__(self, name):
-        return self.ui.get_widget(name)
 
     def add_track(self, info):
         import cgi
@@ -371,7 +372,24 @@ class Track(object):
 
 if __name__ == '__main__':
     try:
-        emusic = EmusicDownloader(sys.argv[1:])
+        try:
+            import guniqueapp
+        except ImportError:
+            app = None
+        else:
+            app = guniqueapp.get_app('emusic-gnome')
+        if app and app.is_running():
+            app.custom_message('\v'.join(sys.argv[1:]))
+            gtk.gdk.notify_startup_complete()
+            sys.exit(1)
+
+        emusic = EmusicDownloader()
+        if app:
+            def message_callback(app, flags, message, *args):
+                emusic.load_files(message.split('\v'))
+            app.connect('message', message_callback)
+        emusic.load_files(sys.argv[1:])
+
         reactor.run()
     except (KeyboardInterrupt, SystemExit):
         pass
