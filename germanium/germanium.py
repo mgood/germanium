@@ -70,13 +70,13 @@ icons = {
     'error': gtk.STOCK_DIALOG_ERROR,
 }
 
-GLADE_FILE = os.path.join(defs.DATA_DIR, defs.PACKAGE, 'emusic-gnome.glade')
+GLADE_FILE = os.path.join(defs.DATA_DIR, defs.PACKAGE, 'germanium.glade')
 
-GCONF_KEY = '/apps/emusic-gnome'
+GCONF_KEY = '/apps/germanium'
 # FIXME need to load schema
 gconf.client_get_default().add_dir(GCONF_KEY, gconf.CLIENT_PRELOAD_NONE)
 
-class EmusicDownloader(object):
+class Germanium(object):
 
     max_downloads = gconf_property(GCONF_KEY+'/max_downloads', gconf.VALUE_INT)
     base_uri = gconf_property(GCONF_KEY+'/base_uri')
@@ -384,18 +384,18 @@ if __name__ == '__main__':
         except ImportError:
             app = None
         else:
-            app = guniqueapp.get_app('emusic-gnome')
+            app = guniqueapp.get_app('germanium')
         if app and app.is_running():
             app.custom_message('\v'.join(sys.argv[1:]))
             gtk.gdk.notify_startup_complete()
             sys.exit(1)
 
-        emusic = EmusicDownloader()
+        germanium = Germanium()
         if app:
             def message_callback(app, flags, message, *args):
-                emusic.load_files(message.split('\v'))
+                germanium.load_files(message.split('\v'))
             app.connect('message', message_callback)
-        emusic.load_files(sys.argv[1:])
+        germanium.load_files(sys.argv[1:])
 
         reactor.run()
     except (KeyboardInterrupt, SystemExit):

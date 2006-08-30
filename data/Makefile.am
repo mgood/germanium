@@ -3,17 +3,20 @@
 # ******************************************************************************
 # GConf Preference Schemas
 #schemadir = $(GCONF_SCHEMA_FILE_DIR)
-#schema_in_files = emusic-gnome.schemas.in
+#schema_in_files = germanium.schemas.in
 #schema_DATA = $(schema_in_files:.schemas.in=.schemas)
 
 # ******************************************************************************
 # Misc data
 # ******************************************************************************
 resourcesdir = $(pkgdatadir)
-resources_DATA = emusic-gnome.glade
+resources_DATA = germanium.glade
+
+applicationsdir = $(datadir)/application-registry
+applications_DATA = germanium.applications
 
 desktopdir = $(datadir)/applications
-desktop_DATA = emusic-gnome.desktop
+desktop_DATA = germanium.desktop
 
 mimedir = $(datadir)/mime/packages
 mime_DATA = emusic.xml
@@ -27,7 +30,7 @@ if HAVE_FDO_DESKTOP
 	$(UPDATE_DESKTOP_DATABASE)
 endif
 
-emusicbindir = $(libdir)/emusic-gnome
+germaniumbindir = $(libdir)/germanium
 
 # ******************************************************************************
 # Build rules
@@ -44,7 +47,8 @@ emusicbindir = $(libdir)/emusic-gnome
 
 EXTRA_DIST = \
 	$(resources_DATA) \
-	$(deskbar_PYTHON) \
+	$(applications_DATA) \
+	$(desktop_DATA) \
 	$(mime_DATA)
 #	$(schema_in_files)
 	

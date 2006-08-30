@@ -1,1 +1,1 @@
-SUBDIRS = emusic data
+SUBDIRS = germanium data

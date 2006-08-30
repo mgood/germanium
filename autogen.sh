@@ -4,7 +4,7 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
-PKG_NAME="emusic-gnome"
+PKG_NAME="germanium"
 ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
 REQUIRED_AUTOCONF_VERSION=2.59
 REQUIRED_AUTOMAKE_VERSION=1.8

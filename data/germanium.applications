@@ -1,6 +1,6 @@
-emusic-gnome
-	command=emusic-gnome
-	name=emusic-gnome
+germanium
+	command=germanium
+	name=germanium
 	can_open_multiple_files=true
 	expects_uris=false
 	requires_terminal=false

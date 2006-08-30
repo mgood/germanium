@@ -1,14 +1,13 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=eMusic GNOME
-GenericName=eMusic GNOME
+Name=Germanium eMusic Downloader
 Comment=Download songs from eMusic.com
 
 Type=Application
 Categories=GNOME;Application;AudioVideo
 
-Exec=emusic-gnome %F
-TryExec=emusic-gnome
+Exec=germanium %F
+TryExec=germanium
 Terminal=false
 StartupNotify=true
 

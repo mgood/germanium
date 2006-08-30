@@ -1,5 +1,5 @@
-AC_INIT(emusic-gnome, 0.2.0, matt@matt-good.net)
-AC_CONFIG_SRCDIR(emusic/__init__.py)
+AC_INIT(germanium, 0.2.0, matt@matt-good.net)
+AC_CONFIG_SRCDIR(germanium/__init__.py)
 AC_CONFIG_MACRO_DIR([m4])
 
 AM_INIT_AUTOMAKE
@@ -78,8 +78,8 @@ AC_SUBST(EMUSIC_GNOME_LIBS)
 
 AC_OUTPUT([
 Makefile
-emusic/Makefile
-emusic/defs.py
+germanium/Makefile
+germanium/defs.py
 data/Makefile
 ])
 
