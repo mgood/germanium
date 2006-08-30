@@ -30,8 +30,15 @@ except ImportError:
     # FIXME
     sys.exit(1)
 
-RESOURCE_DIR = '.'
-sys.path.append(RESOURCE_DIR)
+import os.path
+
+current_dir = os.path.dirname(__file__)
+base_dir = os.path.join(current_dir, '..')
+if (os.path.isdir(base_dir)
+    and os.path.isfile(os.path.join(base_dir, 'AUTHORS'))):
+    sys.path.insert(0, os.path.abspath(base_dir))
+else:
+    sys.path.insert(0, os.path.abspath('@PYTHONDIR@'))
 
 import gconf
 import gnomevfs
@@ -41,14 +48,14 @@ gtk2reactor.install()
 from twisted.internet import reactor
 
 import errno
-import os.path
 from threading import Thread
 from urlparse import urlparse
 
-from emusic.emp import get_tracks
-from emusic.progress import ProgressDownloader, format_time
-from emusic.gconf_util import gconf_property, bind_file_chooser, bind_combo_box, bind_checkbox
-from emusic.vfs_util import vfs_makedirs, open_for_write
+import defs
+from emp import get_tracks
+from progress import ProgressDownloader, format_time
+from gconf_util import gconf_property, bind_file_chooser, bind_combo_box, bind_checkbox
+from vfs_util import vfs_makedirs, open_for_write
 
 TITLE_COLUMN = 0
 PROGRESS_COLUMN = 1
@@ -63,7 +70,7 @@ icons = {
     'error': gtk.STOCK_DIALOG_ERROR,
 }
 
-GLADE_FILE = os.path.join(RESOURCE_DIR, 'emusic-gnome.glade')
+GLADE_FILE = os.path.join(defs.DATA_DIR, defs.PACKAGE, 'emusic-gnome.glade')
 
 GCONF_KEY = '/apps/emusic-gnome'
 # FIXME need to load schema

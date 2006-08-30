@@ -19,13 +19,11 @@ twisted.web
 Installation
 ============
 
-Run:
+Run the following commands to build and install:
+  ./autogen.sh
+  ./configure
+  make
   sudo make install
-
-The default is to install to /usr/local.  You may want to open "Makefile"
-and change "prefix=/usr/local" to "prefix=/usr" or the menu icon may not
-appear.
-
 
 Thanks
 ======
