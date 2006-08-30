@@ -386,7 +386,8 @@ if __name__ == '__main__':
         else:
             app = guniqueapp.get_app('germanium')
         if app and app.is_running():
-            app.custom_message('\v'.join(sys.argv[1:]))
+            files = [os.path.abspath(f) for f in sys.argv[1:]]
+            app.custom_message('\v'.join(files))
             gtk.gdk.notify_startup_complete()
             sys.exit(1)
 
