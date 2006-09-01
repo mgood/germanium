@@ -125,6 +125,8 @@ class Germanium(object):
 
         self.selected_row = None
 
+        Germanium.max_downloads.add_callback(self.on_max_downloads_changed)
+
         if self.max_downloads is None:
             self.max_downloads = 2
         self.active_downloads = 0
@@ -213,6 +215,9 @@ class Germanium(object):
 
     def on_prefs_button_clicked(self, button):
         PreferencesDialog(self)
+
+    def on_max_downloads_changed(self, *args):
+        self._check_queue()
 
     def _get_track(self, row):
         return self.model.get_value(row, OBJECT_COLUMN)
