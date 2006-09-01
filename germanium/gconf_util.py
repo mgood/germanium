@@ -28,6 +28,7 @@ class gconf_property(object):
         self.type = type
         self.value = _from_gconf(self.client.get(key))
         self.client.notify_add(self.key, self._gconf_callback)
+        self.callbacks = []
 
     def __get__(self, inst, cls):
         if inst is None:
@@ -37,8 +38,16 @@ class gconf_property(object):
     def __set__(self, inst, value):
         self.client.set(self.key, _to_gconf(self.type, value))
 
+    def add_callback(self, cb):
+        self.callbacks.append(cb)
+
+    def remove_callback(self, cb):
+        self.callbacks.remove(cb)
+
     def _gconf_callback(self, client, cnx_id, entry, data):
         self.value = _from_gconf(entry.value)
+        for cb in self.callbacks:
+            cb(client, cnx_id, entry, data)
 
 
 def bind_file_chooser(chooser, key):

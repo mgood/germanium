@@ -292,6 +292,11 @@ FILE_PATTERNS = [("Number - Title", "%tN - %tt"),
 
 class PreferencesDialog(object):
 
+    path_pattern = gconf_property(GCONF_KEY+'/path_pattern')
+    file_pattern = gconf_property(GCONF_KEY+'/file_pattern')
+    strip_special = gconf_property(GCONF_KEY+'/strip-special')
+    label_prefs = [path_pattern, file_pattern, strip_special]
+
     def __init__(self, parent):
         ui = gtk.glade.XML(GLADE_FILE, 'prefs_dialog')
         dialog = ui.get_widget('prefs_dialog')
@@ -310,6 +315,16 @@ class PreferencesDialog(object):
         strip_option = ui.get_widget('check_strip')
         bind_checkbox(strip_option, GCONF_KEY+'/strip-special')
 
+        self.sample_track = Track(dict(artist='Islands',
+                                       album='Return to the Sea',
+                                       tracknum='4',
+                                       title='Rough Gem'))
+        self.path_example_label = ui.get_widget('path_example_label')
+        self.update_example_label()
+
+        for pref in PreferencesDialog.label_prefs:
+            pref.add_callback(self.update_example_label)
+
         dialog.show()
 
     def on_response(self, dialog, response):
@@ -320,6 +335,17 @@ class PreferencesDialog(object):
 
     def on_dialog_hide(self, dialog):
         dialog.destroy()
+        for pref in PreferencesDialog.label_prefs:
+            pref.remove_callback(self.update_example_label)
+
+    def update_example_label(self, *args):
+        pathname = self.sample_track.fill_pattern(self.path_pattern,
+                                                  self.strip_special)
+        filename = self.sample_track.fill_pattern(self.file_pattern,
+                                                  self.strip_special)
+        label = '<small><i><b>Example:</b> /%s/%s.mp3</i></small>' \
+                % (pathname, filename)
+        self.path_example_label.set_markup(label)
 
 
 def gtk_model_iter(tree):
