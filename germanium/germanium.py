@@ -46,10 +46,12 @@ import gnomevfs
 from twisted.internet import gtk2reactor
 gtk2reactor.install()
 from twisted.internet import reactor
+from twisted.web import client
 
 import errno
 from threading import Thread
 from urlparse import urlparse
+import weakref
 
 import defs
 from emp import get_tracks
@@ -131,6 +133,10 @@ class Germanium(object):
             self.max_downloads = 2
         self.active_downloads = 0
 
+        self._cover_queue = set()
+        self.max_cover_downloads = 1
+        self.active_cover_downloads = 0
+
     def __getitem__(self, name):
         return self.ui.get_widget(name)
 
@@ -144,9 +150,12 @@ class Germanium(object):
         import cgi
         title = '<b>%s</b>\n%s' % (cgi.escape(info['title']),
                                    cgi.escape(info['artist']))
-        row = self.model.append([title, 0, '', None, Track(info)])
+        track = Track(info)
+        row = self.model.append([title, 0, '', None, track])
         if self.active_downloads < self.max_downloads:
             self._download(row)
+        if not track.cover_image.is_loaded:
+            self._queue_cover_download(track.cover_image)
 
     def quit(self, widget):
         reactor.stop()
@@ -186,6 +195,10 @@ class Germanium(object):
     def on_track_selection_changed(self, selection):
         model, row = selection.get_selected()
         self.selected_row = row
+        if row:
+            self._get_track(row).cover_image.attach(self['cover_image'])
+        else:
+            self['cover_image'].clear()
 
     def on_start_button_clicked(self, button):
         if self.selected_row is None:
@@ -273,6 +286,35 @@ class Germanium(object):
             track = self._get_track(row)
             if track.status == 'new':
                 self._download(row)
+
+    def _queue_cover_download(self, cover_image):
+        self._cover_queue.add(cover_image)
+        self._check_cover_queue()
+
+    def _download_cover(self):
+        self.active_cover_downloads += 1
+        cover_image = self._cover_queue.pop()
+
+        def complete(result):
+            self._cover_done()
+        def error(failure):
+            cover_image.error_loading(failure)
+            self._cover_done()
+
+        url = cover_image.url
+        scheme,host,path,_,_,_ = urlparse(url)
+        factory = client.HTTPDownloader(url, cover_image.get_dest_file())
+        reactor.connectTCP(host, 80, factory)
+        factory.deferred.addCallback(complete).addErrback(error)
+
+    def _cover_done(self):
+        self.active_cover_downloads -= 1
+        self._check_cover_queue()
+
+    def _check_cover_queue(self):
+        while (self._cover_queue
+               and self.active_cover_downloads < self.max_cover_downloads):
+            self._download_cover()
 
 
 PATH_PATTERNS = [('Album Artist, Album Title', '%aa/%at'),
@@ -374,6 +416,7 @@ class Track(object):
                          '%tt': self.tags['title'],
                          '%tT': self.tags['title'].lower(),
                         }
+        self.cover_image = CoverImage(self.tags['albumart'])
 
     def start(self, downloader):
         self.downloader = downloader
@@ -406,6 +449,87 @@ class Track(object):
         for k,v in self.patterns.iteritems():
             pattern = [p.replace(k, v) for p in pattern]
         return '/'.join([self.sanitize(p, strip_chars) for p in pattern])
+
+
+# TODO check that images are garbage collected when not used
+class CoverImage(object):
+    icon_size = 66
+    _loading_icon = None
+    _missing_icon = None
+    _cache = weakref.WeakValueDictionary()
+
+    def __new__(cls, url):
+        try:
+            return cls._cache[url]
+        except KeyError:
+            pass
+        new_obj = object.__new__(cls, url)
+        cls._cache[url] = new_obj
+        return new_obj
+ 
+    @classmethod
+    def _get_icon(cls, name):
+        icon_theme = gtk.icon_theme_get_default()
+        loading_icon = icon_theme.lookup_icon(name, cls.icon_size,
+                                              gtk.ICON_LOOKUP_FORCE_SVG)
+        return loading_icon.load_icon()
+
+    @classmethod
+    def loading_icon(cls):
+        if cls._loading_icon is None:
+            cls._loading_icon = cls._get_icon('gnome-fs-loading-icon')
+        return cls._loading_icon
+
+    @classmethod
+    def missing_icon(cls):
+        if cls._missing_icon is None:
+            cls._missing_icon = cls._get_icon('gtk-missing-image')
+        return cls._missing_icon
+
+    def __init__(self, url):
+        self.url = url
+        self.pixbuf = None
+        self.attachment = None
+
+    @property
+    def is_loaded(self):
+        return self.pixbuf is not None
+
+    def get_dest_file(self):
+        """Returns a file-like object to write the image data to"""
+        self.loader = gtk.gdk.PixbufLoader()
+        self.loader.set_size(CoverImage.icon_size, CoverImage.icon_size)
+        self.loader.connect('closed', self._load_complete)
+        return self.loader
+
+    def _load_complete(self, loader):
+        """Callback for `PixbufLoader` when the image has finished loading"""
+        self.pixbuf = loader.get_pixbuf()
+        if self.attachment:
+            self.attachment.set_from_pixbuf(self.pixbuf)
+
+    def error_loading(self, failure):
+        try:
+            self.loader.close()
+        except:
+            pass
+        del self.loader
+
+        self.pixbuf = CoverImage.missing_icon()
+        if self.attachment:
+            self.attachment.set_from_pixbuf(self.pixbuf)
+
+    def attach(self, image_widget):
+        """Associates this object with an image widget.  If the cover data has
+        not completed loading the image will be set to a "loading" icon.  Once
+        the cover data is available the image will be set to display the cover.
+        """
+        self.attachment = image_widget
+        self.attachment.set_from_pixbuf(self.pixbuf
+                                        or CoverImage.loading_icon())
+
+    def detach(self):
+        self.attachment = None
 
 
 if __name__ == '__main__':

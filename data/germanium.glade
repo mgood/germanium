@@ -2,7 +2,7 @@
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
 <!-- Generated with glade3
 	Version: 3.0.1
-	Date: Thu Aug 31 21:37:24 2006
+	Date: Fri Sep  1 00:12:16 2006
 	User: matt
 	Host: nny
 -->
@@ -78,7 +78,33 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <widget class="GtkHBox" id="hbox1">
+            <property name="visible">True</property>
+            <property name="border_width">6</property>
+            <property name="spacing">11</property>
+            <child>
+              <widget class="GtkImage" id="cover_image">
+                <property name="width_request">66</property>
+                <property name="height_request">66</property>
+                <property name="visible">True</property>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="song_label">
+                <property name="visible">True</property>
+              </widget>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">1</property>
+          </packing>
         </child>
         <child>
           <widget class="GtkScrolledWindow" id="scrolledwindow1">

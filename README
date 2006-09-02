@@ -7,7 +7,7 @@ parameters.
 Requirements
 ============
 
-Python 2.4 (2.3 may work, but I have not tested it)
+Python 2.4
 
 python-gtk2
 python-gnome2
