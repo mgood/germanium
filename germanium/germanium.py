@@ -409,7 +409,10 @@ class Track(object):
         self.downloader = None
         self.status = 'new'
         self.patterns = {'%aa': self.tags['artist'],
+                         '%aA': self.tags['artist'].lower(),
                          '%at': self.tags['album'],
+                         '%aT': self.tags['album'].lower(),
+                         '%tn': self.tags['tracknum'],
                          '%tN': self.tags['tracknum'].zfill(2),
                          '%ta': self.tags['artist'],
                          '%tA': self.tags['artist'].lower(),
