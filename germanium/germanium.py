@@ -86,7 +86,7 @@ class Germanium(object):
     file_pattern = gconf_property(GCONF_KEY+'/file_pattern')
  
     # TODO
-    strip_special = gconf_property(GCONF_KEY+'/strip-special', gconf.VALUE_BOOL)
+    strip_special = gconf_property(GCONF_KEY+'/strip_special', gconf.VALUE_BOOL)
 
     def __init__(self):
         self.ui = gtk.glade.XML(GLADE_FILE, 'main_window')
@@ -341,7 +341,7 @@ class PreferencesDialog(object):
 
     path_pattern = gconf_property(GCONF_KEY+'/path_pattern')
     file_pattern = gconf_property(GCONF_KEY+'/file_pattern')
-    strip_special = gconf_property(GCONF_KEY+'/strip-special')
+    strip_special = gconf_property(GCONF_KEY+'/strip_special')
     label_prefs = [path_pattern, file_pattern, strip_special]
 
     def __init__(self, parent):
@@ -360,7 +360,7 @@ class PreferencesDialog(object):
         bind_combo_box(file_option, GCONF_KEY+'/file_pattern', FILE_PATTERNS)
 
         strip_option = ui.get_widget('check_strip')
-        bind_checkbox(strip_option, GCONF_KEY+'/strip-special')
+        bind_checkbox(strip_option, GCONF_KEY+'/strip_special')
 
         self.sample_track = Track(dict(artist='Islands',
                                        album='Return to the Sea',
