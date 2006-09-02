@@ -416,7 +416,8 @@ class Track(object):
                          '%tt': self.tags['title'],
                          '%tT': self.tags['title'].lower(),
                         }
-        self.cover_image = CoverImage(self.tags['albumart'])
+        if 'albumart' in self.tags:
+            self.cover_image = CoverImage(self.tags['albumart'])
 
     def start(self, downloader):
         self.downloader = downloader
