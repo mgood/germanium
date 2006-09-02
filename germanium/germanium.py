@@ -75,7 +75,6 @@ icons = {
 GLADE_FILE = os.path.join(defs.DATA_DIR, defs.PACKAGE, 'germanium.glade')
 
 GCONF_KEY = '/apps/germanium'
-# FIXME need to load schema
 gconf.client_get_default().add_dir(GCONF_KEY, gconf.CLIENT_PRELOAD_NONE)
 
 class Germanium(object):
@@ -259,9 +258,12 @@ class Germanium(object):
             self._download_done()
 
         url = str('http://dl.emusic.com/dl/%(trackid)s/%(filename)s' % track.tags)
-        dir_uri = gnomevfs.URI(self.base_uri)
-        dir_uri = dir_uri.append_path(track.fill_pattern(self.path_pattern,
-                                                         self.strip_special))
+        if self.base_uri is None:
+            dir_uri = gnomevfs.get_uri_from_local_path(os.path.expanduser('~'))
+        else:
+            dir_uri = self.base_uri
+        pathname = track.fill_pattern(self.path_pattern, self.strip_special)
+        dir_uri = gnomevfs.URI(dir_uri).append_path(pathname)
 
         filename = track.fill_pattern(self.file_pattern,
                                       self.strip_special) + '.mp3'

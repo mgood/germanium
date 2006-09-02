@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+
+<gconfschemafile>
+  <schemalist>
+
+    <schema>
+      <key>/schemas/apps/germanium/max_downloads</key>
+      <applyto>/apps/germanium/max_downloads</applyto>
+      <type>int</type>
+      <owner>germanium</owner>
+      <default>2</default>
+      <locale name="C">
+        <short>The maximum number of simultaneous song downloads.</short>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/germanium/base_uri</key>
+      <applyto>/apps/germanium/base_uri</applyto>
+      <type>string</type>
+      <owner>germanium</owner>
+      <locale name="C">
+        <!-- No default, NULL will use $HOME -->
+        <short>The URI to save the extracted music to.</short>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/germanium/path_pattern</key>
+      <applyto>/apps/germanium/path_pattern</applyto>
+      <type>string</type>
+      <owner>germanium</owner>
+      <default>%aa/%at</default>
+      <locale name="C">
+        <short>The directory structure for the files</short>
+        <long>
+        %at -- album title
+        %aT -- album title (lowercase)
+        %aa -- album artist
+        %aA -- album artist (lowercase)
+        %tt -- track title
+        %tT -- track title (lowercase)
+        %ta -- track artist
+        %tA -- track artist (lowercase)
+        </long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/germanium/file_pattern</key>
+      <applyto>/apps/germanium/file_pattern</applyto>
+      <type>string</type>
+      <owner>germanium</owner>
+      <default>%tN - %tt</default>
+      <locale name="C">
+        <short>The name pattern for files</short>
+        <long>
+        Do not specify an extension.
+        %at -- album title
+        %aT -- album title (lowercase)
+        %aa -- album artist
+        %aA -- album artist (lowercase)
+        %tn -- track number (i.e 8)
+        %tN -- track number, zero padded (i.e 08)
+        %tt -- track title
+        %tT -- track title (lowercase)
+        %ta -- track artist
+        %tA -- track artist (lowercase)
+        </long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/germanium/strip_special</key>
+      <applyto>/apps/germanium/strip_special</applyto>
+      <type>bool</type>
+      <owner>germanium</owner>
+      <default>false</default>
+      <locale name="C">
+        <short>Whether to strip special characters from filenames</short>
+        <long>
+          If enabled, special characters such as spaces, wildcards and
+          backslashes will be removed from the output filename.
+        </long>
+      </locale>
+    </schema>
+
+  </schemalist>
+</gconfschemafile>
