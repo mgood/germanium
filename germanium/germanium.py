@@ -24,7 +24,6 @@ try:
 except ImportError:
     pass
 try:
-    import gtk
     import gtk.glade
 except ImportError:
     # FIXME
@@ -48,8 +47,6 @@ gtk2reactor.install()
 from twisted.internet import reactor
 from twisted.web import client
 
-import errno
-from threading import Thread
 from urlparse import urlparse
 import weakref
 
