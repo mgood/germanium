@@ -92,7 +92,7 @@ class Germanium(object):
                    'on_stop_button_clicked',
                    'on_clear_button_clicked',
                    'on_prefs_button_clicked',
-                   'on_about_activate',
+                   'on_about_activated',
                   ]
         handlers = dict([(s,getattr(self, s)) for s in signals])
         handlers['on_quit_activated'] = self.quit
@@ -224,7 +224,7 @@ class Germanium(object):
                 if not self.model.remove(row):
                     break
 
-    def on_about_activate(self, button):
+    def on_about_activated(self, button):
         about = gtk.AboutDialog()
         for key, value in {'name': 'Germanium',
                            'comments': 'Download client for eMusic.com',

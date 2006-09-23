@@ -2,7 +2,7 @@
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
 <!-- Generated with glade3
 	Version: 3.0.1
-	Date: Sat Sep 23 15:54:56 2006
+	Date: Sat Sep 23 16:36:11 2006
 	User: matt
 	Host: nny
 -->
@@ -70,7 +70,7 @@
                         <property name="label">gtk-about</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_about_activate"/>
+                        <signal name="activate" handler="on_about_activated"/>
                       </widget>
                     </child>
                   </widget>
