@@ -94,7 +94,7 @@ class Germanium(object):
                    'on_prefs_button_clicked',
                   ]
         handlers = dict([(s,getattr(self, s)) for s in signals])
-        handlers['on_main_window_destroy'] = self.quit
+        handlers['on_quit_activated'] = self.quit
         self.ui.signal_autoconnect(handlers)
         self.view = self['download_view']
 
