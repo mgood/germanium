@@ -36,8 +36,10 @@ base_dir = os.path.join(current_dir, '..')
 if (os.path.isdir(base_dir)
     and os.path.isfile(os.path.join(base_dir, 'AUTHORS'))):
     sys.path.insert(0, os.path.abspath(base_dir))
+    GLADE_FILE = os.path.join(base_dir, 'data', 'germanium.glade')
 else:
     sys.path.insert(0, os.path.abspath('@PYTHONDIR@'))
+    GLADE_FILE = os.path.join(defs.DATA_DIR, defs.PACKAGE, 'germanium.glade')
 
 import gconf
 import gnomevfs
@@ -69,7 +71,6 @@ icons = {
     'error': gtk.STOCK_DIALOG_ERROR,
 }
 
-GLADE_FILE = os.path.join(defs.DATA_DIR, defs.PACKAGE, 'germanium.glade')
 
 GCONF_KEY = '/apps/germanium'
 gconf.client_get_default().add_dir(GCONF_KEY, gconf.CLIENT_PRELOAD_NONE)
