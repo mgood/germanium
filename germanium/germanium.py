@@ -150,6 +150,8 @@ class Germanium(object):
                                    cgi.escape(info['artist']))
         track = Track(info)
         row = self.model.append([title, 0, '', None, track])
+        if self.selected_row is None:
+            self.view.get_selection().select_iter(row)
         if self.active_downloads < self.max_downloads:
             self._download(row)
         if not track.cover_image.is_loaded:
