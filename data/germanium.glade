@@ -2,7 +2,7 @@
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
 <!-- Generated with glade3
 	Version: 3.0.1
-	Date: Sat Sep 23 15:13:32 2006
+	Date: Sat Sep 23 15:54:56 2006
 	User: matt
 	Host: nny
 -->
@@ -65,11 +65,12 @@
                   <widget class="GtkMenu" id="menu3">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkImageMenuItem" id="imagemenuitem10">
+                      <widget class="GtkImageMenuItem" id="about_menuitem">
                         <property name="visible">True</property>
                         <property name="label">gtk-about</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_about_activate"/>
                       </widget>
                     </child>
                   </widget>
@@ -90,6 +91,7 @@
                 <property name="visible">True</property>
                 <property name="is_important">True</property>
                 <property name="stock_id">gtk-open</property>
+                <signal name="clicked" handler="on_open_button_clicked"/>
               </widget>
             </child>
             <child>
@@ -98,12 +100,14 @@
                 <property name="label">Resume</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-media-play</property>
+                <signal name="clicked" handler="on_start_button_clicked"/>
               </widget>
             </child>
             <child>
               <widget class="GtkToolButton" id="stop_button">
                 <property name="visible">True</property>
                 <property name="stock_id">gtk-stop</property>
+                <signal name="clicked" handler="on_stop_button_clicked"/>
               </widget>
             </child>
             <child>
@@ -112,6 +116,7 @@
                 <property name="label">Clean up</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-clear</property>
+                <signal name="clicked" handler="on_clear_button_clicked"/>
               </widget>
             </child>
             <child>
@@ -128,6 +133,7 @@
               <widget class="GtkToolButton" id="prefs_button">
                 <property name="visible">True</property>
                 <property name="stock_id">gtk-preferences</property>
+                <signal name="clicked" handler="on_prefs_button_clicked"/>
               </widget>
             </child>
           </widget>
