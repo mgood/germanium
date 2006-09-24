@@ -76,8 +76,13 @@ def decrypt(line):
 
     return ''.join(decoded)
 
-def get_tracks(emp_filename):
-    emp_xml = decrypt(open(emp_filename, 'rb').read())
+def get_tracks(emp_file):
+    if not hasattr(emp_file, 'read'):
+        emp_file = open(emp_file, 'rb')
+    try:
+        emp_xml = decrypt(emp_file.read())
+    finally:
+        emp_file.close()
     from xml.dom.minidom import parseString
     from xml.dom import Node
     dom = parseString(emp_xml)

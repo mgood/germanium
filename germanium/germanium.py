@@ -56,7 +56,7 @@ import defs
 from emp import get_tracks
 from progress import ProgressDownloader, format_time
 from gconf_util import gconf_property, bind_file_chooser, bind_combo_box, bind_checkbox
-from vfs_util import vfs_makedirs, open_for_write
+from vfs_util import vfs_makedirs, open_for_write, HandleWrapper
 
 TITLE_COLUMN = 0
 PROGRESS_COLUMN = 1
@@ -101,6 +101,9 @@ class Germanium(object):
 
         self.model = gtk.ListStore(str, int, str, str, object)
         self.view.set_model(self.model)
+        self.view.enable_model_drag_dest([('text/plain', 0, 0)],
+                                         gtk.gdk.ACTION_DEFAULT)
+        self.view.connect('drag_data_received', self.on_drag_received)
 
         column = gtk.TreeViewColumn('State', gtk.CellRendererPixbuf(),
                                     stock_id=ICON_COLUMN)
@@ -140,8 +143,8 @@ class Germanium(object):
 
     def load_files(self, files):
         # TODO the .emp file contains the server info in the XML
-        for filename in files:
-            for track in get_tracks(filename):
+        for f in files:
+            for track in get_tracks(f):
                 self.add_track(track)
 
     def add_track(self, info):
@@ -243,6 +246,10 @@ class Germanium(object):
 
     def on_max_downloads_changed(self, *args):
         self._check_queue()
+
+    def on_drag_received(self, treeview, context, x, y, selection, info, timestamp):
+        self.load_files([HandleWrapper(uri) for uri
+                         in selection.data.splitlines()])
 
     def _get_track(self, row):
         return self.model.get_value(row, OBJECT_COLUMN)

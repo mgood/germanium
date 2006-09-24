@@ -16,6 +16,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA
 
+from cStringIO import StringIO
+
 import gnomevfs
 
 def open_for_write(filename, mode=0666):
@@ -23,6 +25,18 @@ def open_for_write(filename, mode=0666):
         return gnomevfs.create(filename, gnomevfs.OPEN_WRITE, mode)
     except gnomevfs.FileExistsError:
         return gnomevfs.Handle(filename, gnomevfs.OPEN_WRITE)
+
+class HandleWrapper(gnomevfs.Handle):
+    def read(self, size=-1):
+        if size == -1:
+            buff = StringIO()
+            try:
+                while True:
+                    buff.write(gnomevfs.Handle.read(self, 512))
+            except gnomevfs.EOFError:
+                pass
+            return buff.getvalue()
+        return gnomevfs.Handle.read(self, size)
 
 # Copyright 2005-2006 Gautier Portet
 def vfs_makedirs(uri, mode=0777):
