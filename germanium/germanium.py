@@ -39,6 +39,7 @@ if (os.path.isdir(base_dir)
     GLADE_FILE = os.path.join(base_dir, 'data', 'germanium.glade')
 else:
     sys.path.insert(0, os.path.abspath('@PYTHONDIR@'))
+    import defs
     GLADE_FILE = os.path.join(defs.DATA_DIR, defs.PACKAGE, 'germanium.glade')
 
 import gconf
