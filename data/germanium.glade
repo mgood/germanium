@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!-- Generated with glade3
+<!--Generated with glade3 3.0.2 on Fri Feb  2 19:03:33 2007 by matt@nny
 	Version: 3.0.1
 	Date: Sat Sep 23 16:36:11 2006
 	User: matt
@@ -153,6 +153,7 @@
                 <property name="width_request">66</property>
                 <property name="height_request">66</property>
                 <property name="visible">True</property>
+                <property name="stock">gtk-missing-image</property>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -213,7 +214,7 @@
             <child>
               <widget class="GtkFrame" id="frame_folder">
                 <property name="visible">True</property>
-                <property name="label_xalign">0.000000</property>
+                <property name="label_xalign">0</property>
                 <property name="shadow_type">GTK_SHADOW_NONE</property>
                 <child>
                   <widget class="GtkAlignment" id="alignment6">
@@ -227,7 +228,7 @@
                         <child>
                           <widget class="GtkLabel" id="path_label">
                             <property name="visible">True</property>
-                            <property name="xalign">0.000000</property>
+                            <property name="xalign">0</property>
                             <property name="label" translatable="yes">_Folder:</property>
                             <property name="use_underline">True</property>
                             <property name="wrap">True</property>
@@ -239,8 +240,8 @@
                         </child>
                         <child>
                           <widget class="GtkFileChooserButton" id="path_chooser">
-                            <property name="local_only">False</property>
                             <property name="action">GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER</property>
+                            <property name="local_only">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="title">Select A Folder</property>
@@ -272,7 +273,7 @@
             <child>
               <widget class="GtkFrame" id="frame_names">
                 <property name="visible">True</property>
-                <property name="label_xalign">0.000000</property>
+                <property name="label_xalign">0</property>
                 <property name="shadow_type">GTK_SHADOW_NONE</property>
                 <child>
                   <widget class="GtkAlignment" id="alignment7">
@@ -285,7 +286,7 @@
                         <child>
                           <widget class="GtkLabel" id="path_example_label">
                             <property name="visible">True</property>
-                            <property name="xalign">0.000000</property>
+                            <property name="xalign">0</property>
                             <property name="label">path_example_label</property>
                             <property name="use_markup">True</property>
                             <property name="ellipsize">PANGO_ELLIPSIZE_END</property>
@@ -303,42 +304,20 @@
                               <placeholder/>
                             </child>
                             <child>
-                              <widget class="GtkLabel" id="folder_label">
+                              <widget class="GtkCheckButton" id="check_strip">
                                 <property name="visible">True</property>
-                                <property name="xalign">0.000000</property>
-                                <property name="label" translatable="yes">Folder hie_rarchy:</property>
+                                <property name="can_focus">True</property>
+                                <property name="label" translatable="yes">_Strip special characters</property>
                                 <property name="use_underline">True</property>
-                                <property name="mnemonic_widget">path_option</property>
-                              </widget>
-                              <packing>
-                                <property name="x_options">GTK_FILL</property>
-                                <property name="y_options"></property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkLabel" id="file_label">
-                                <property name="visible">True</property>
-                                <property name="xalign">0.000000</property>
-                                <property name="label" translatable="yes">File _name:</property>
-                                <property name="use_underline">True</property>
-                                <property name="mnemonic_widget">file_option</property>
-                              </widget>
-                              <packing>
-                                <property name="top_attach">1</property>
-                                <property name="bottom_attach">2</property>
-                                <property name="x_options">GTK_FILL</property>
-                                <property name="y_options"></property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkComboBox" id="path_option">
-                                <property name="visible">True</property>
-                                <property name="items" translatable="yes"></property>
+                                <property name="draw_indicator">True</property>
                               </widget>
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="y_options">GTK_FILL</property>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
+                                <property name="x_options">GTK_FILL</property>
+                                <property name="y_options"></property>
                               </packing>
                             </child>
                             <child>
@@ -355,18 +334,40 @@
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkCheckButton" id="check_strip">
+                              <widget class="GtkComboBox" id="path_option">
                                 <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="label" translatable="yes">_Strip special characters</property>
-                                <property name="use_underline">True</property>
-                                <property name="draw_indicator">True</property>
+                                <property name="items" translatable="yes"></property>
                               </widget>
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
+                                <property name="y_options">GTK_FILL</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkLabel" id="file_label">
+                                <property name="visible">True</property>
+                                <property name="xalign">0</property>
+                                <property name="label" translatable="yes">File _name:</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">file_option</property>
+                              </widget>
+                              <packing>
+                                <property name="top_attach">1</property>
+                                <property name="bottom_attach">2</property>
+                                <property name="x_options">GTK_FILL</property>
+                                <property name="y_options"></property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkLabel" id="folder_label">
+                                <property name="visible">True</property>
+                                <property name="xalign">0</property>
+                                <property name="label" translatable="yes">Folder hie_rarchy:</property>
+                                <property name="use_underline">True</property>
+                                <property name="mnemonic_widget">path_option</property>
+                              </widget>
+                              <packing>
                                 <property name="x_options">GTK_FILL</property>
                                 <property name="y_options"></property>
                               </packing>
@@ -394,6 +395,43 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkFrame" id="frame_names1">
+                <property name="visible">True</property>
+                <property name="label_xalign">0</property>
+                <property name="shadow_type">GTK_SHADOW_NONE</property>
+                <child>
+                  <widget class="GtkAlignment" id="alignment1">
+                    <property name="visible">True</property>
+                    <property name="top_padding">6</property>
+                    <property name="left_padding">12</property>
+                    <child>
+                      <widget class="GtkCheckButton" id="check_save_cover">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="label" translatable="yes">_Save cover to album folder</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_indicator">True</property>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+                <child>
+                  <widget class="GtkLabel" id="label1">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Cover Art&lt;/b&gt;</property>
+                    <property name="use_markup">True</property>
+                  </widget>
+                  <packing>
+                    <property name="type">label_item</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="expand">False</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </widget>

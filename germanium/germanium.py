@@ -29,7 +29,10 @@ except ImportError:
     # FIXME
     sys.exit(1)
 
-import os.path
+from cStringIO import StringIO
+
+import os
+import shutil
 
 current_dir = os.path.dirname(__file__)
 base_dir = os.path.join(current_dir, '..')
@@ -82,9 +85,10 @@ class Germanium(object):
     base_uri = gconf_property(GCONF_KEY+'/base_uri')
     path_pattern = gconf_property(GCONF_KEY+'/path_pattern')
     file_pattern = gconf_property(GCONF_KEY+'/file_pattern')
+    cover_filename = gconf_property(GCONF_KEY+'/cover_filename')
  
-    # TODO
     strip_special = gconf_property(GCONF_KEY+'/strip_special', gconf.VALUE_BOOL)
+    save_cover = gconf_property(GCONF_KEY+'/save_cover', gconf.VALUE_BOOL)
 
     def __init__(self):
         self.ui = gtk.glade.XML(GLADE_FILE, 'main_window')
@@ -291,6 +295,9 @@ class Germanium(object):
 
         vfs_makedirs(dir_uri)
         openfile = open_for_write(dir_uri.append_file_name(filename))
+        if self.save_cover:
+            cover_dest = dir_uri.append_file_name(self.cover_filename)
+            track.cover_image.add_dest(cover_dest)
 
         scheme,host,path,_,_,_ = urlparse(url)
         factory = ProgressDownloader(url, openfile, started, progress)
@@ -385,6 +392,9 @@ class PreferencesDialog(object):
         strip_option = ui.get_widget('check_strip')
         bind_checkbox(strip_option, GCONF_KEY+'/strip_special')
 
+        save_cover_option = ui.get_widget('check_save_cover')
+        bind_checkbox(save_cover_option, GCONF_KEY+'/save_cover')
+
         self.sample_track = Track(dict(artist='Islands',
                                        album='Return to the Sea',
                                        tracknum='4',
@@ -478,6 +488,35 @@ class Track(object):
         return '/'.join([self.sanitize(p, strip_chars) for p in pattern])
 
 
+class MultiDestFile(object):
+
+    def __init__(self, *streams):
+        self.buffer = StringIO()
+        self.streams = list(streams)
+        self.closed = False
+
+    def add_dest(self, stream):
+        self.buffer.seek(0)
+        shutil.copyfileobj(self.buffer, stream)
+        if self.closed:
+            stream.close()
+        else:
+            self.streams.append(stream)
+
+    def write(self, *args, **kw):
+        if self.closed:
+            raise IOError("Can't write after closing")
+        self.buffer.write(*args, **kw)
+        for s in self.streams:
+            s.write(*args, **kw)
+
+    def close(self):
+        self.closed = True
+        for s in self.streams:
+            s.close()
+        self.streams = []
+
+
 # TODO check that images are garbage collected when not used
 class CoverImage(object):
     icon_size = 66
@@ -517,17 +556,26 @@ class CoverImage(object):
         self.url = url
         self.pixbuf = None
         self.attachment = None
+        self.buffer = MultiDestFile()
+        self.file_dests = set()
 
     @property
     def is_loaded(self):
         return self.pixbuf is not None
+
+    def add_dest(self, file_uri):
+        if file_uri in self.file_dests:
+            return
+        self.file_dests.add(file_uri)
+        self.buffer.add_dest(open_for_write(file_uri))
 
     def get_dest_file(self):
         """Returns a file-like object to write the image data to"""
         self.loader = gtk.gdk.PixbufLoader()
         self.loader.set_size(CoverImage.icon_size, CoverImage.icon_size)
         self.loader.connect('closed', self._load_complete)
-        return self.loader
+        self.buffer.add_dest(self.loader)
+        return self.buffer
 
     def _load_complete(self, loader):
         """Callback for `PixbufLoader` when the image has finished loading"""

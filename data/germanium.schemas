@@ -85,5 +85,27 @@
       </locale>
     </schema>
 
+    <schema>
+      <key>/schemas/apps/germanium/save_cover</key>
+      <applyto>/apps/germanium/save_cover</applyto>
+      <type>bool</type>
+      <owner>germanium</owner>
+      <default>true</default>
+      <locale name="C">
+        <short>Whether to save the cover art to the album folder</short>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/germanium/cover_filename</key>
+      <applyto>/apps/germanium/cover_filename</applyto>
+      <type>string</type>
+      <owner>germanium</owner>
+      <default>Cover.jpeg</default>
+      <locale name="C">
+        <short>The filename the cover art should be saved as</short>
+      </locale>
+    </schema>
+
   </schemalist>
 </gconfschemafile>
