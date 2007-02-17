@@ -31,6 +31,17 @@ except ImportError:
 
 from cStringIO import StringIO
 
+try:
+    import gtkunique
+    UniqueApp = gtkunique.UniqueApp
+except ImportError:
+    class UniqueApp:
+        """A dummy UniqueApp for when gtkunique isn't installed."""
+        def __init__(self, name):
+            pass
+        def is_running(self):
+            return False
+
 import os
 import shutil
 
@@ -79,7 +90,7 @@ icons = {
 GCONF_KEY = '/apps/germanium'
 gconf.client_get_default().add_dir(GCONF_KEY, gconf.CLIENT_PRELOAD_NONE)
 
-class Germanium(object):
+class Germanium(UniqueApp):
 
     max_downloads = gconf_property(GCONF_KEY+'/max_downloads', gconf.VALUE_INT)
     base_uri = gconf_property(GCONF_KEY+'/base_uri')
@@ -91,6 +102,11 @@ class Germanium(object):
     save_cover = gconf_property(GCONF_KEY+'/save_cover', gconf.VALUE_BOOL)
 
     def __init__(self):
+        UniqueApp.__init__(self, 'net.matt-good.Germanium')
+        try:
+            self.connect('message', self.on_message)
+        except AttributeError:
+            pass
         self.ui = gtk.glade.XML(GLADE_FILE, 'main_window')
         signals = ['on_open_button_clicked',
                    'on_start_button_clicked',
@@ -167,6 +183,16 @@ class Germanium(object):
 
     def quit(self, widget):
         reactor.stop()
+
+    def on_message(self, app, command, command_data, *args):
+        if command == gtkunique.OPEN:
+            files = [command_data]
+        elif command == gtkunique.CUSTOM:
+            files = command_data.split('\v')
+        else:
+            return gtkunique.RESPONSE_ABORT
+        self.load_files(files)
+        return gtkunique.RESPONSE_OK
 
     def on_open_button_clicked(self, button):
         file_open = gtk.FileChooserDialog(title='Open EMP file',
@@ -609,25 +635,14 @@ class CoverImage(object):
 
 if __name__ == '__main__':
     try:
-        try:
-            import guniqueapp
-        except ImportError:
-            app = None
-        else:
-            app = guniqueapp.get_app('germanium')
-        if app and app.is_running():
+        germanium = Germanium()
+        if germanium.is_running():
             files = [os.path.abspath(f) for f in sys.argv[1:]]
-            app.custom_message('\v'.join(files))
+            germanium.send_message(gtkunique.CUSTOM, '\v'.join(files))
             gtk.gdk.notify_startup_complete()
             sys.exit(1)
 
-        germanium = Germanium()
-        if app:
-            def message_callback(app, flags, message, *args):
-                germanium.load_files(message.split('\v'))
-            app.connect('message', message_callback)
         germanium.load_files(sys.argv[1:])
-
         reactor.run()
     except (KeyboardInterrupt, SystemExit):
         pass
