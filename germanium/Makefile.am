@@ -5,8 +5,9 @@ germaniumbindir = $(bindir)
 germaniumbin_SCRIPTS = germanium
 
 germaniumdir = $(libdir)/germanium
+nodist_germanium_PYTHON = \
+	defs.py
 germanium_PYTHON = \
-	defs.py \
 	emp.py \
 	gconf_util.py \
 	__init__.py \
