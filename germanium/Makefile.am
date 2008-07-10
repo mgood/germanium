@@ -1,5 +1,6 @@
 germanium: germanium.py
 	sed -e "s|\@PYTHONDIR\@|$(libdir)/germanium|" $< > $@
+	chmod +x $@
 
 germaniumbindir = $(bindir)
 germaniumbin_SCRIPTS = germanium
