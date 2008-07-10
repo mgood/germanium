@@ -1,17 +1,16 @@
 germanium: germanium.py
-	sed -e "s|\@PYTHONDIR\@|$(libdir)/germanium|" $< > $@
+	sed -e "s|\@PYTHONDIR\@|$(datadir)/germanium|" $< > $@
 	chmod +x $@
 
 germaniumbindir = $(bindir)
 germaniumbin_SCRIPTS = germanium
 
-germaniumdir = $(libdir)/germanium
+germaniumdir = $(datadir)/germanium
 nodist_germanium_PYTHON = \
 	defs.py
 germanium_PYTHON = \
 	emp.py \
 	gconf_util.py \
-	__init__.py \
 	progress.py \
 	vfs_util.py
 	
@@ -27,4 +26,5 @@ DISTCLEANFILES = \
 	
 EXTRA_DIST = \
 	defs.py.in \
+	__init__.py \
 	germanium.py
