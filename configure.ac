@@ -1,4 +1,4 @@
-AC_INIT(germanium, 0.2.0, matt@matt-good.net)
+AC_INIT(germanium, 0.2.1, matt@matt-good.net)
 AC_CONFIG_SRCDIR(germanium/__init__.py)
 AC_CONFIG_MACRO_DIR([m4])
 
