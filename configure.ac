@@ -2,14 +2,9 @@ AC_INIT(germanium, 0.2.1, matt@matt-good.net)
 AC_CONFIG_SRCDIR(germanium/__init__.py)
 AC_CONFIG_MACRO_DIR([m4])
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wall])
 GNOME_COMMON_INIT
 
-AM_MAINTAINER_MODE
-AM_DISABLE_STATIC
-AM_PROG_LIBTOOL
-AC_SUBST(ACLOCAL_AMFLAGS, "$ACLOCAL_FLAGS -I m4")
-AC_PROG_CC
 AC_PROG_INSTALL
 
 dnl ****************************************************************************
@@ -41,7 +36,6 @@ dnl ****************************************************************************
 dnl * Python
 dnl ****************************************************************************
 AM_PATH_PYTHON(2.4)
-AM_CHECK_PYTHON_HEADERS(,[AC_MSG_ERROR(could not find Python headers)])
 
 dnl ****************************************************************************
 dnl * Write the values of various paths in defs.py
