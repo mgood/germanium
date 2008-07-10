@@ -31,7 +31,11 @@ if GCONF_SCHEMAS_INSTALL
 install-data-local: install-schemas
 install-schemas:
 	GCONF_CONFIG_SOURCE=$(GCONF_SCHEMA_CONFIG_SOURCE) \
-		$(GCONFTOOL) --makefile-install-rule $(schema_DATA)
+		$(GCONFTOOL) --makefile-install-rule `for schema in $(schema_DATA); do \
+		if test -f "$$schema"; then dir=""; \
+		elif test -f "$(srcdir)/$$schema"; then dir="$(srcdir)/"; \
+		else dir=""; fi; \
+		echo "$${dir}$${schema}"; done`
 endif
 
 #DISTCLEANFILES = \
