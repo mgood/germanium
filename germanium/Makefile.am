@@ -1,6 +1,6 @@
 germanium: germanium.py
-	sed -e "s|\@PYTHONDIR\@|$(datadir)/germanium|" $< > $@
-	sed -e "s|\@PYTHON\@|$(PYTHON)|" $< > $@
+	sed -e "s|\@PYTHONDIR\@|$(datadir)/germanium|" \
+	    -e "s|\@PYTHON\@|$(PYTHON)|" $< > $@
 	chmod +x $@
 
 germaniumbindir = $(bindir)
